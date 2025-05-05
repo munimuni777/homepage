@@ -173,6 +173,9 @@
             margin: 0 auto;
             max-width: 850px;
             padding: 10px 0;
+            height: auto !important;
+            min-height: 300px;
+            overflow: visible !important;
         }
         
         /* Cusdisのコメント入力欄を整える */
@@ -181,6 +184,21 @@
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 15px;
+        }
+        
+        /* iframeのスクロールバーを非表示にする */
+        #cusdis_thread iframe {
+            height: auto !important;
+            min-height: 400px;
+            overflow: visible !important;
+        }
+        
+        /* Cusdisのフレーム内要素の高さ制限を解除 */
+        .comments-section .cusdis-wrapper,
+        .comments-section .cusdis-container {
+            height: auto !important;
+            min-height: 400px;
+            overflow: visible !important;
         }
         
         @media (max-width: 768px) {
@@ -310,6 +328,23 @@
               data-page-title="むにむにのホームページ"
             ></div>
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+            
+            <script>
+              // Cusdisのiframeの高さを動的に調整するスクリプト
+              window.addEventListener('load', function() {
+                setTimeout(function() {
+                  var cusdisIframes = document.querySelectorAll('#cusdis_thread iframe');
+                  if (cusdisIframes.length > 0) {
+                    for (var i = 0; i < cusdisIframes.length; i++) {
+                      cusdisIframes[i].style.height = 'auto';
+                      cusdisIframes[i].style.minHeight = '600px';
+                      cusdisIframes[i].style.overflow = 'visible';
+                      cusdisIframes[i].setAttribute('scrolling', 'no');
+                    }
+                  }
+                }, 1000);
+              });
+            </script>
         </div>
     </div>
     
