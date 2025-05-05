@@ -173,9 +173,6 @@
             margin: 0 auto;
             max-width: 850px;
             padding: 10px 0;
-            height: auto !important;
-            min-height: 300px;
-            overflow: visible !important;
         }
         
         /* Cusdisのコメント入力欄を整える */
@@ -186,19 +183,26 @@
             margin-bottom: 15px;
         }
         
-        /* iframeのスクロールバーを非表示にする */
-        #cusdis_thread iframe {
+        /* コメント一覧の表示エリアを高さ無制限に */
+        #cusdis_thread .comment-list {
             height: auto !important;
-            min-height: 400px;
+            max-height: none !important;
             overflow: visible !important;
         }
         
-        /* Cusdisのフレーム内要素の高さ制限を解除 */
-        .comments-section .cusdis-wrapper,
-        .comments-section .cusdis-container {
+        /* すべてのCusdis要素の高さ制限を解除 */
+        #cusdis_thread * {
             height: auto !important;
-            min-height: 400px;
+            max-height: none !important;
             overflow: visible !important;
+        }
+        
+        /* iframeの高さ調整 */
+        #cusdis_thread iframe {
+            height: 800px !important;
+            min-height: 800px;
+            width: 100%;
+            border: none;
         }
         
         @media (max-width: 768px) {
@@ -208,6 +212,11 @@
             
             h1 {
                 font-size: 2rem;
+            }
+            
+            /* モバイルでのiframe高さ調整 */
+            #cusdis_thread iframe {
+                height: 1000px !important;
             }
         }
     </style>
@@ -326,23 +335,65 @@
               data-page-id="munimuni-homepage"
               data-page-url="https://www.munimuni.net/"
               data-page-title="むにむにのホームページ"
+              data-auto-approved="true"
             ></div>
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
             
             <script>
-              // Cusdisのiframeの高さを動的に調整するスクリプト
-              window.addEventListener('load', function() {
-                setTimeout(function() {
+              // Cusdisのiframe高さ調整と表示改善スクリプト
+              function adjustCusdisHeight() {
+                try {
+                  // iframeを探す
                   var cusdisIframes = document.querySelectorAll('#cusdis_thread iframe');
                   if (cusdisIframes.length > 0) {
                     for (var i = 0; i < cusdisIframes.length; i++) {
-                      cusdisIframes[i].style.height = 'auto';
-                      cusdisIframes[i].style.minHeight = '600px';
-                      cusdisIframes[i].style.overflow = 'visible';
-                      cusdisIframes[i].setAttribute('scrolling', 'no');
+                      var iframe = cusdisIframes[i];
+                      
+                      // スクロールバーを消す
+                      iframe.setAttribute('scrolling', 'no');
+                      
+                      // iframeのコンテンツが読み込まれた後に実行
+                      iframe.addEventListener('load', function() {
+                        this.style.height = '800px';
+                        
+                        // iframeの中のすべての要素に対して高さ制限を解除する処理を試みる
+                        try {
+                          var iframeDoc = this.contentDocument || this.contentWindow.document;
+                          if (iframeDoc) {
+                            // スタイルを挿入
+                            var style = iframeDoc.createElement('style');
+                            style.textContent = `
+                              * {
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                              }
+                              .comment-list, .comment-item {
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                              }
+                            `;
+                            iframeDoc.head.appendChild(style);
+                          }
+                        } catch (e) {
+                          console.log('iframeの内部スタイル適用に失敗:', e);
+                        }
+                      });
                     }
                   }
-                }, 1000);
+                } catch (e) {
+                  console.log('Cusdis調整エラー:', e);
+                }
+              }
+              
+              // ページロード後に実行
+              window.addEventListener('load', function() {
+                // 少し遅延させて実行
+                setTimeout(adjustCusdisHeight, 1000);
+                
+                // 定期的に高さを再調整（新しいコメントが追加された場合のため）
+                setInterval(adjustCusdisHeight, 3000);
               });
             </script>
         </div>
