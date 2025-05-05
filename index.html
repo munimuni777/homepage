@@ -307,7 +307,7 @@
         <div class="comments-section">
             <h2>コメント</h2>
 
-            <!-- Cusdis コメントシステム -->
+            <!-- Cusdis コメントシステム（日本語対応版） -->
             <div id="cusdis_thread"
               data-host="https://cusdis.com"
               data-app-id="c6710792-e5e9-4444-b20c-a0df98f7a333"
@@ -316,9 +316,9 @@
               data-page-title="むにむにのホームページ"
             ></div>
             
-            <!-- 先にカスタムスクリプトを配置 -->
+            <!-- Cusdisの日本語化設定 -->
             <script>
-              // Cusdisの初期化前に実行されるように、グローバル変数でオプションを設定
+              // 日本語表示のための設定
               window.CUSDIS_LOCALE = {
                 "powered_by": "Powered by Cusdis",
                 "post_comment": "コメントする",
@@ -331,182 +331,37 @@
                 "mod_badge": "モデレーター",
                 "content_is_required": "コメント内容を入力してください",
                 "nickname_is_required": "ニックネームを入力してください",
-                "comment_has_been_sent": "コメントが送信されました。自動承認が有効になっています。"
-              };
-              
-              // Cusdisの設定をオーバーライドするための準備
-              window.CUSDIS = window.CUSDIS || {};
-              window.CUSDIS_PARAMS = {
-                approve: "all", // 全てのコメントを自動承認
+                "comment_has_been_sent": "コメントが送信されました"
               };
             </script>
             
-            <!-- 次にCusdisのスクリプトを読み込む -->
+            <!-- Cusdisのスクリプト読み込み -->
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
             
+            <!-- コメント表示エリアの高さと見た目を調整するシンプルなスクリプト -->
             <script>
               document.addEventListener('DOMContentLoaded', function() {
-                // オリジナルのaddCommentメソッドをオーバーライド
-                const originalCusdisInit = window.renderCusdis;
-                if (originalCusdisInit) {
-                  window.renderCusdis = function(...args) {
-                    // オリジナルの初期化を実行
-                    const result = originalCusdisInit.apply(this, args);
-                    
-                    // iframeが読み込まれるのを待つ
-                    setTimeout(function checkAndFixCusdis() {
-                      const iframe = document.querySelector('#cusdis_thread iframe');
-                      if (iframe) {
-                        fixCusdisIframe(iframe);
-                      } else {
-                        // まだ読み込まれていない場合は再試行
-                        setTimeout(checkAndFixCusdis, 200);
-                      }
-                    }, 500);
-                    
-                    return result;
-                  };
-                }
-                
-                // 既にCusdisが読み込まれている場合の対応
-                setTimeout(function() {
+                // iframeの確認と高さ調整
+                let checkInterval = setInterval(function() {
                   const iframe = document.querySelector('#cusdis_thread iframe');
                   if (iframe) {
-                    fixCusdisIframe(iframe);
-                  }
-                }, 1000);
-                
-                function fixCusdisIframe(iframe) {
-                  // iframeの高さを大きく設定
-                  iframe.style.minHeight = '600px';
-                  iframe.style.height = '600px';
-                  
-                  // クロスオリジンの制約があるため、postMessageを使用してiframe内のスクリプトと通信
-                  try {
-                    // iframeのロードイベントを監視
-                    iframe.addEventListener('load', function() {
-                      // iframeの内部スタイルを修正
-                      const message = {
-                        type: 'cusdis-style-fix',
-                        styles: `
-                          body, html { height: auto !important; overflow: visible !important; }
-                          .comment-list { max-height: none !important; overflow: visible !important; }
-                          .comment-item { height: auto !important; }
-                          button { background-color: #3498db !important; color: white !important; }
-                          .captcha-container { margin-top: 10px; }
-                        `
-                      };
-                      // iframeにメッセージを送信
-                      iframe.contentWindow.postMessage(message, '*');
-                      
-                      // 自動承認のハックメッセージ
-                      iframe.contentWindow.postMessage({
-                        type: 'cusdis-auto-approve',
-                        enabled: true
-                      }, '*');
+                    // インターバルをクリア
+                    clearInterval(checkInterval);
+                    
+                    // iframeの高さを設定
+                    iframe.style.minHeight = '600px';
+                    iframe.style.height = '600px';
+                    iframe.style.width = '100%';
+                    iframe.style.border = 'none';
+                    
+                    // リサイズ時にも高さを維持
+                    window.addEventListener('resize', function() {
+                      iframe.style.height = '600px';
                     });
-                  } catch (e) {
-                    console.error('Cusdis iframe 処理エラー:', e);
+                    
+                    console.log('Cusdisコメントエリアの高さを調整しました');
                   }
-                }
-                
-                // メッセージを受信するリスナー（デバッグ用）
-                window.addEventListener('message', function(event) {
-                  if (event.data && event.data.type === 'cusdis-debug') {
-                    console.log('Cusdis Debug:', event.data);
-                  }
-                });
-              });
-              
-              // Cusdisのスクリプトの直後に実行されるコード
-              setTimeout(function() {
-                // Cusdisオブジェクトをモンキーパッチする
-                if (window.CUSDIS) {
-                  const originalAddComment = window.CUSDIS.addComment;
-                  if (originalAddComment) {
-                    window.CUSDIS.addComment = function(comment) {
-                      // コメントを自動承認する
-                      if (comment) {
-                        comment.approved = true;
-                      }
-                      return originalAddComment.call(this, comment);
-                    };
-                  }
-                }
-              }, 2000);
-            </script>
-            
-            <!-- iframeと親ウィンドウの通信を可能にするスクリプト -->
-            <script>
-              // iframe側で実行されるコードを注入
-              document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(function injectIframeScript() {
-                  const iframe = document.querySelector('#cusdis_thread iframe');
-                  if (iframe) {
-                    try {
-                      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                      if (!iframeDoc) {
-                        setTimeout(injectIframeScript, 500);
-                        return;
-                      }
-                      
-                      // スクリプトの注入
-                      const script = iframeDoc.createElement('script');
-                      script.textContent = `
-                        // メッセージ受信ハンドラ
-                        window.addEventListener('message', function(event) {
-                          try {
-                            const data = event.data;
-                            
-                            // スタイル適用
-                            if (data.type === 'cusdis-style-fix' && data.styles) {
-                              const style = document.createElement('style');
-                              style.textContent = data.styles;
-                              document.head.appendChild(style);
-                            }
-                            
-                            // 自動承認ハック
-                            if (data.type === 'cusdis-auto-approve' && data.enabled) {
-                              if (window.CUSDIS) {
-                                const originalAddComment = window.CUSDIS.addComment;
-                                window.CUSDIS.addComment = function(comment) {
-                                  comment.approved = true;
-                                  return originalAddComment(comment);
-                                };
-                              }
-                              
-                              // フォーム送信をハック
-                              document.addEventListener('submit', function(e) {
-                                // デバッグ情報を親ウィンドウに送信
-                                window.parent.postMessage({
-                                  type: 'cusdis-debug',
-                                  event: 'form-submitted'
-                                }, '*');
-                              });
-                            }
-                          } catch (e) {
-                            console.error('メッセージ処理エラー:', e);
-                          }
-                        });
-                        
-                        // CSDSの承認ステータスをオーバーライド
-                        if (window.CUSDIS_DATA && window.CUSDIS_DATA.appId) {
-                          window.CUSDIS_DATA.autoApprove = true;
-                        }
-                      `;
-                      
-                      // スクリプトを挿入
-                      iframeDoc.body.appendChild(script);
-                    } catch (e) {
-                      console.error('iframe script注入エラー:', e);
-                      // 再試行
-                      setTimeout(injectIframeScript, 500);
-                    }
-                  } else {
-                    // iframeがまだ存在しないので再試行
-                    setTimeout(injectIframeScript, 500);
-                  }
-                }, 1000);
+                }, 500);
               });
             </script>
         </div>
