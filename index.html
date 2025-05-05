@@ -173,36 +173,14 @@
             margin: 0 auto;
             max-width: 850px;
             padding: 10px 0;
+            min-height: 600px; /* 最小高さを設定 */
         }
         
-        /* Cusdisのコメント入力欄を整える */
-        .cusdis-div {
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        /* コメント一覧の表示エリアを高さ無制限に */
-        #cusdis_thread .comment-list {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        
-        /* すべてのCusdis要素の高さ制限を解除 */
-        #cusdis_thread * {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        
-        /* iframeの高さ調整 */
+        /* iframeの高さ調整 - 非常に重要 */
         #cusdis_thread iframe {
-            height: 800px !important;
-            min-height: 800px;
-            width: 100%;
-            border: none;
+            width: 100% !important;
+            min-height: 600px !important; 
+            border: none !important;
         }
         
         @media (max-width: 768px) {
@@ -216,7 +194,7 @@
             
             /* モバイルでのiframe高さ調整 */
             #cusdis_thread iframe {
-                height: 1000px !important;
+                min-height: 700px !important;
             }
         }
     </style>
@@ -335,65 +313,79 @@
               data-page-id="munimuni-homepage"
               data-page-url="https://www.munimuni.net/"
               data-page-title="むにむにのホームページ"
-              data-auto-approved="true"
             ></div>
             <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
             
             <script>
-              // Cusdisのiframe高さ調整と表示改善スクリプト
-              function adjustCusdisHeight() {
-                try {
-                  // iframeを探す
-                  var cusdisIframes = document.querySelectorAll('#cusdis_thread iframe');
-                  if (cusdisIframes.length > 0) {
-                    for (var i = 0; i < cusdisIframes.length; i++) {
-                      var iframe = cusdisIframes[i];
-                      
-                      // スクロールバーを消す
-                      iframe.setAttribute('scrolling', 'no');
-                      
-                      // iframeのコンテンツが読み込まれた後に実行
-                      iframe.addEventListener('load', function() {
-                        this.style.height = '800px';
-                        
-                        // iframeの中のすべての要素に対して高さ制限を解除する処理を試みる
-                        try {
-                          var iframeDoc = this.contentDocument || this.contentWindow.document;
-                          if (iframeDoc) {
-                            // スタイルを挿入
-                            var style = iframeDoc.createElement('style');
-                            style.textContent = `
-                              * {
-                                height: auto !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                              }
-                              .comment-list, .comment-item {
-                                height: auto !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                              }
-                            `;
-                            iframeDoc.head.appendChild(style);
-                          }
-                        } catch (e) {
-                          console.log('iframeの内部スタイル適用に失敗:', e);
-                        }
-                      });
-                    }
+              document.addEventListener('DOMContentLoaded', function() {
+                // Cusdisの読み込み完了を待つ
+                let checkCusdisInterval = setInterval(function() {
+                  if (document.querySelector('#cusdis_thread iframe')) {
+                    clearInterval(checkCusdisInterval);
+                    fixCusdis();
                   }
-                } catch (e) {
-                  console.log('Cusdis調整エラー:', e);
-                }
-              }
-              
-              // ページロード後に実行
-              window.addEventListener('load', function() {
-                // 少し遅延させて実行
-                setTimeout(adjustCusdisHeight, 1000);
+                }, 500);
                 
-                // 定期的に高さを再調整（新しいコメントが追加された場合のため）
-                setInterval(adjustCusdisHeight, 3000);
+                function fixCusdis() {
+                  // iframe要素を取得
+                  const iframe = document.querySelector('#cusdis_thread iframe');
+                  if (!iframe) return;
+                  
+                  // iframeの高さを大きく設定
+                  iframe.style.minHeight = '600px';
+                  iframe.style.height = '600px';
+                  
+                  // iframeのload完了後に実行
+                  iframe.addEventListener('load', function() {
+                    try {
+                      // iframeの内部にアクセス
+                      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                      
+                      // 自動承認を有効にするスクリプト
+                      const script = document.createElement('script');
+                      script.textContent = `
+                        // コメント自動承認のハック
+                        if (window.CUSDIS) {
+                          const originalAddComment = window.CUSDIS.addComment;
+                          window.CUSDIS.addComment = function(comment) {
+                            // 自動承認にするためのコード
+                            comment.approved = true;
+                            return originalAddComment(comment);
+                          };
+                        }
+                      `;
+                      
+                      // スタイルの調整
+                      const style = document.createElement('style');
+                      style.textContent = `
+                        body, html {
+                          height: auto !important;
+                          overflow: visible !important;
+                        }
+                        .comment-list {
+                          max-height: none !important;
+                          overflow: visible !important;
+                        }
+                        .comment-item {
+                          height: auto !important;
+                        }
+                      `;
+                      
+                      // iframeのヘッドにスクリプトとスタイルを追加
+                      if (iframeDoc.head) {
+                        iframeDoc.head.appendChild(script);
+                        iframeDoc.head.appendChild(style);
+                      }
+                    } catch (e) {
+                      console.log('Cusdis iframe アクセスエラー:', e);
+                    }
+                  });
+                  
+                  // リサイズを検知して高さを調整
+                  window.addEventListener('resize', function() {
+                    iframe.style.height = '600px';
+                  });
+                }
               });
             </script>
         </div>
