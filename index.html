@@ -165,35 +165,6 @@
             font-size: 0.8rem;
         }
         
-        .comments-section {
-            margin-top: 50px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        .comments-section h2 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-            font-size: 1.4rem;
-            text-align: center;
-        }
-        
-        /* Cusdisのコメント欄のスタイル調整 */
-        #cusdis_thread {
-            margin: 0 auto;
-            max-width: 850px;
-            padding: 10px 0;
-            min-height: 600px; /* 最小高さを設定 */
-        }
-        
-        /* iframeの高さ調整 - 非常に重要 */
-        #cusdis_thread iframe {
-            width: 100% !important;
-            min-height: 600px !important; 
-            border: none !important;
-        }
         
         @media (max-width: 768px) {
             .platforms {
@@ -204,10 +175,6 @@
                 font-size: 2rem;
             }
             
-            /* モバイルでのiframe高さ調整 */
-            #cusdis_thread iframe {
-                min-height: 700px !important;
-            }
         }
     </style>
 </head>
@@ -328,19 +295,6 @@
                 </div>
             </div>
 
-            <!-- Discord -->
-            <div class="platform-card">
-                <div class="platform-header discord">Discord</div>
-                <div class="platform-content">
-                    <h3>むにむに</h3>
-                    <p>むにむに公園のなんでも<br></p>
-                    <div class="video-container">
-                        <img src="https://cluster-file-storage.imgix.net/assets/venues/thumbnails/bc9c03c2-769d-4f15-bb81-f4621d46828a/vt_190d9c5837abcd41a7f03bf4f4.jpg" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
-                    </div>
-                    <a href="https://discord.gg/3FFVgJGzDP" target="_blank" class="btn">サーバーに参加する</a>
-                </div>
-            </div>
-
             <!-- Yahoo! JAPAN クリエイターズプログラム -->
             <div class="platform-card">
                 <div class="platform-header yahoo-creators">Yahoo!ニュース エキスパート</div>
@@ -353,69 +307,21 @@
                     <a href="https://news.yahoo.co.jp/expert/creators/munimunibekkan" target="_blank" class="btn">記事一覧を見る</a>
                 </div>
             </div>
+
+            <!-- Discord -->
+            <div class="platform-card">
+                <div class="platform-header discord">Discord</div>
+                <div class="platform-content">
+                    <h3>むにむに</h3>
+                    <p>むにむに公園のなんでも<br></p>
+                    <div class="video-container">
+                        <img src="https://cluster-file-storage.imgix.net/assets/venues/thumbnails/bc9c03c2-769d-4f15-bb81-f4621d46828a/vt_190d9c5837abcd41a7f03bf4f4.jpg" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;">
+                    </div>
+                    <a href="https://discord.gg/3FFVgJGzDP" target="_blank" class="btn">サーバーに参加する</a>
+                </div>
+            </div>
         </div>
         
-        <div class="comments-section">
-            <h2>コメント</h2>
-
-            <!-- Cusdis コメントシステム（日本語対応版） -->
-            <div id="cusdis_thread"
-              data-host="https://cusdis.com"
-              data-app-id="2dd5e3e2-4070-4769-aff6-e32fc4789157"
-              data-page-id="munimuni-homepage"
-              data-page-url="https://www.munimuni.net/"
-              data-page-title="むにむにのホームページ"
-            ></div>
-            
-            <!-- Cusdisの日本語化設定 -->
-            <script>
-              // 日本語表示のための設定
-              window.CUSDIS_LOCALE = {
-                "powered_by": "Powered by Cusdis",
-                "post_comment": "コメントする",
-                "loading": "読み込み中...",
-                "email": "メールアドレス (不要です)",
-                "nickname": "ニックネーム",
-                "reply_placeholder": "返信...",
-                "reply_btn": "返信",
-                "sending": "送信中...",
-                "mod_badge": "モデレーター",
-                "content_is_required": "コメント内容を入力してください",
-                "nickname_is_required": "ニックネームを入力してください",
-                "comment_has_been_sent": "コメントが送信されました"
-              };
-            </script>
-            
-            <!-- Cusdisのスクリプト読み込み -->
-            <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
-            
-            <!-- コメント表示エリアの高さと見た目を調整するシンプルなスクリプト -->
-            <script>
-              document.addEventListener('DOMContentLoaded', function() {
-                // iframeの確認と高さ調整
-                let checkInterval = setInterval(function() {
-                  const iframe = document.querySelector('#cusdis_thread iframe');
-                  if (iframe) {
-                    // インターバルをクリア
-                    clearInterval(checkInterval);
-                    
-                    // iframeの高さを設定
-                    iframe.style.minHeight = '600px';
-                    iframe.style.height = '600px';
-                    iframe.style.width = '100%';
-                    iframe.style.border = 'none';
-                    
-                    // リサイズ時にも高さを維持
-                    window.addEventListener('resize', function() {
-                      iframe.style.height = '600px';
-                    });
-                    
-                    console.log('Cusdisコメントエリアの高さを調整しました');
-                  }
-                }, 500);
-              });
-            </script>
-        </div>
     </div>
     
     <footer>
